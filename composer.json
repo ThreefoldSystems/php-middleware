@@ -1,0 +1,33 @@
+{
+    "name": "threefold/middleware",
+    "description": "PHP code to connect to Pub Services middleware",
+    "keywords": [
+        "php",
+        "middleware"
+    ],
+    "authors": [
+        {
+            "name": "Aine Hickey",
+            "email": "ahickey@threefoldsystems.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.0",
+        "psr/log": "~1.0",
+        "guzzlehttp/guzzle": "^6.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "5.*",
+        "monolog/monolog": "1.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Threefold\\Middleware\\": "src/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    }
+}
