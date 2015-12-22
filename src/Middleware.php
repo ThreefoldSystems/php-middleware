@@ -355,21 +355,16 @@ class Middleware implements MiddlewareInterface
      * A helper method to reduce repetition.
      *
      * @param string $url
-     * @param string $token (optional)
      * @return array Associative array of returned data. Returns WP_Error object on error
      * @throws MiddlewareException
      */
-    protected function get($url, $token = null)
+    protected function get($url)
     {
-        if (!$token) {
-            $token = $this->getToken();
-        }
-
-        $this->log->info('Middleware GET Request to: '.$url.' (token: '.$token.')');
+        $this->log->info('Middleware GET Request to: '.$url.' (token: '.$this->token.')');
 
         try {
             // Make request
-            $headers = ['token' => $token];
+            $headers = ['token' => $this->token];
             $response = $this->guzzleClient->request(
                 'GET',
                 $url,

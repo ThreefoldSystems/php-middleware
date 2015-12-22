@@ -18,7 +18,7 @@ To install this package pull it in through Composer.
     
 If you want the latest dev version, use:
 
-    "threefold/laravel-ldap-auth": "1.0.*-dev"
+    "threefold/middleware": "1.0.*-dev"
     
 ## Usage
 
