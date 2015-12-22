@@ -9,6 +9,10 @@
         {
             "name": "Aine Hickey",
             "email": "ahickey@threefoldsystems.com"
+        },
+        {
+            "name": "Ciaran McGrath",
+            "email": "cmcgrath@threefoldsystems.com"
         }
     ],
     "require": {

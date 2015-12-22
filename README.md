@@ -16,6 +16,10 @@ To install this package pull it in through Composer.
         }
     ]
     
+If you want the latest dev version, use:
+
+    "threefold/laravel-ldap-auth": "1.0.*-dev"
+    
 ## Usage
 
 A token and a logger are needed to make a call. Each customer has their own token, which should be in Confluence.
@@ -45,7 +49,7 @@ $middleware = $factory->create($token, MiddlewareFactory::MIDDLEWARE_UAT);
 $middleware = $factory->create($token, MiddlewareFactory::MIDDLEWARE_FAKE);
 ```
     
-** If you use the fake class, know that not all methods have been faked. Please let me know if you need one faked! **
+**If you use the fake class, know that not all methods have been faked. Please let me know if you need one faked!**
     
 ### Calls
 
@@ -91,4 +95,3 @@ Results:
         }
     ]
     
-
