@@ -6,8 +6,6 @@
 
 namespace Threefold\Middleware;
 
-use Psr\Log\LoggerInterface;
-
 /**
  * Class MiddlewareFactoryTest
  *
@@ -21,6 +19,10 @@ class MiddlewareFactoryTest extends \PHPUnit_Framework_TestCase
      * @var MiddlewareFactory
      */
     protected $object;
+    /**
+     * @var \Monolog\Handler\TestHandler
+     */
+    protected $logTestHandler;
 
     /**
      * @covers ::__construct
@@ -29,8 +31,9 @@ class MiddlewareFactoryTest extends \PHPUnit_Framework_TestCase
     {
         parent::setUp();
 
-        $log = new \Monolog\Logger('name');
-        $log->pushHandler(new \Monolog\Handler\TestHandler());
+        $log = new \Monolog\Logger('middleware');
+        $this->logTestHandler = new \Monolog\Handler\TestHandler();
+        $log->pushHandler($this->logTestHandler);
 
         $this->object = new MiddlewareFactory($log);
     }
@@ -43,6 +46,13 @@ class MiddlewareFactoryTest extends \PHPUnit_Framework_TestCase
         $token = 'abc123';
         $middleware = $this->object->create($token);
         $this->assertInstanceOf('\Threefold\Middleware\Middleware', $middleware);
+
+        $logRecords = $this->logTestHandler->getRecords();
+        $this->assertCount(1, $logRecords);
+        $this->assertStringEndsWith(
+            'middleware.DEBUG: Creating new middleware {"environment":"uat"} []' . PHP_EOL,
+            $logRecords[0]['formatted']
+        );
     }
 
     /**
@@ -53,6 +63,13 @@ class MiddlewareFactoryTest extends \PHPUnit_Framework_TestCase
         $token = 'abc123';
         $middleware = $this->object->create($token, MiddlewareFactory::MIDDLEWARE_PRODUCTION);
         $this->assertInstanceOf('\Threefold\Middleware\Middleware', $middleware);
+
+        $logRecords = $this->logTestHandler->getRecords();
+        $this->assertCount(1, $logRecords);
+        $this->assertStringEndsWith(
+            'middleware.DEBUG: Creating new middleware {"environment":"production"} []' . PHP_EOL,
+            $logRecords[0]['formatted']
+        );
     }
 
     /**
@@ -63,6 +80,13 @@ class MiddlewareFactoryTest extends \PHPUnit_Framework_TestCase
         $token = 'abc123';
         $middleware = $this->object->create($token, MiddlewareFactory::MIDDLEWARE_UAT);
         $this->assertInstanceOf('\Threefold\Middleware\Middleware', $middleware);
+
+        $logRecords = $this->logTestHandler->getRecords();
+        $this->assertCount(1, $logRecords);
+        $this->assertStringEndsWith(
+            'middleware.DEBUG: Creating new middleware {"environment":"uat"} []' . PHP_EOL,
+            $logRecords[0]['formatted']
+        );
     }
 
     /**
@@ -73,16 +97,38 @@ class MiddlewareFactoryTest extends \PHPUnit_Framework_TestCase
         $token = 'abc123';
         $middleware = $this->object->create($token, MiddlewareFactory::MIDDLEWARE_FAKE);
         $this->assertInstanceOf('\Threefold\Middleware\MiddlewareFaker', $middleware);
+
+        $logRecords = $this->logTestHandler->getRecords();
+        $this->assertCount(1, $logRecords);
+        $this->assertStringEndsWith(
+            'middleware.DEBUG: Creating new middleware {"environment":"fake"} []' . PHP_EOL,
+            $logRecords[0]['formatted']
+        );
     }
 
     /**
      * @covers ::create
-     * @expectedException Threefold\Middleware\Exception\MiddlewareException
+     * @expectedException \Threefold\Middleware\Exception\MiddlewareException
      * @expectedExceptionMessage Invalid environment: banana
      */
     public function testCreateWithInvalidEnvThrowsException()
     {
-        $token = 'abc123';
-        $this->object->create($token, 'banana');
+        try {
+            $token = 'abc123';
+            $this->object->create($token, 'banana');
+        } catch (\Exception $e) {
+            $logRecords = $this->logTestHandler->getRecords();
+            $this->assertCount(2, $logRecords);
+            $this->assertStringEndsWith(
+                'middleware.DEBUG: Creating new middleware {"environment":"banana"} []' . PHP_EOL,
+                $logRecords[0]['formatted']
+            );
+            $this->assertStringEndsWith(
+                'middleware.ERROR: Invalid environment {"environment":"banana"} []' . PHP_EOL,
+                $logRecords[1]['formatted']
+            );
+
+            throw $e;
+        }
     }
 }

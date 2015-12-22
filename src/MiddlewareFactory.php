@@ -54,6 +54,8 @@ class MiddlewareFactory
      */
     public function create($token, $environment = 'uat')
     {
+        $this->log->debug('Creating new middleware', ['environment' => $environment]);
+
         switch ($environment) {
             case self::MIDDLEWARE_PRODUCTION:
                 return new Middleware($this->log, self::PRODUCTION_URL, $token);
@@ -65,6 +67,7 @@ class MiddlewareFactory
                 return new MiddlewareFaker($this->log, '', $token);
 
             default:
+                $this->log->error('Invalid environment', ['environment' => $environment]);
                 throw new MiddlewareException('Invalid environment: ' . $environment);
         }
     }
