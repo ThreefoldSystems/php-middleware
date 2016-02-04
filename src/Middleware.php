@@ -283,7 +283,7 @@ class Middleware implements MiddlewareInterface
     {
         $content = $this->get_customer_by_login($username, $password);
         if (isset($content->customerNumber) && !is_null($content->customerNumber)) {
-            return $this->get_subscriptions_by_id($customer->customerNumber);
+            return $this->get_subscriptions_by_id($content->customerNumber);
         }
     }
 
