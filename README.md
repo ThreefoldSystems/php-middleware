@@ -18,7 +18,7 @@ To install this package pull it in through Composer.
     
 If you want the latest dev version, use:
 
-    "threefold/middleware": "1.1.*-dev"
+    "threefold/middleware": "1.0.*-dev"
     
 ## Usage
 
