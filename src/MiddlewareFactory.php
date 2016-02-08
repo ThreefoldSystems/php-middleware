@@ -8,6 +8,8 @@ namespace Threefold\Middleware;
 
 use Psr\Log\LoggerInterface as Logger;
 use Threefold\Middleware\Exception\MiddlewareException;
+use Threefold\Middleware\Middleware;
+use GuzzleHttp\Client;
 
 /**
  * Middleware Factory
@@ -58,13 +60,16 @@ class MiddlewareFactory
 
         switch ($environment) {
             case self::MIDDLEWARE_PRODUCTION:
-                return new Middleware($this->log, self::PRODUCTION_URL, $token);
+                $guzzleClient = new Client(['base_uri' => self::PRODUCTION_URL]);
+                return new Middleware($this->log, $guzzleClient, $token);
 
             case self::MIDDLEWARE_UAT:
-                return new Middleware($this->log, self::UAT_URL, $token);
+                $guzzleClient = new Client(['base_uri' => self::UAT_URL]);
+                return new Middleware($this->log, $guzzleClient, $token);
 
             case self::MIDDLEWARE_FAKE:
-                return new MiddlewareFaker($this->log, '', $token);
+                $guzzleClient = new Client(['base_uri' => 'http://example.com']);
+                return new MiddlewareFaker($this->log, $guzzleClient, $token);
 
             default:
                 $this->log->error('Invalid environment', ['environment' => $environment]);

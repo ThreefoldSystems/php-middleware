@@ -6,7 +6,9 @@
 
 namespace Threefold\Middleware;
 
+use GuzzleHttp\ClientInterface;
 use \Psr\Log\LoggerInterface as Logger;
+use Threefold\Middleware\Exception\InvalidTokenException;
 
 interface MiddlewareInterface
 {
@@ -14,10 +16,10 @@ interface MiddlewareInterface
      * Constructor
      *
      * @param Logger $logger Logger
-     * @param string $url
+     * @param ClientInterface $httpClient
      * @param string $token
      */
-    public function __construct(Logger $logger, $url, $token);
+    public function __construct(Logger $logger, ClientInterface $httpClient, $token);
 
     /**
      * Find customer number by contact ID and org ID
@@ -49,6 +51,7 @@ interface MiddlewareInterface
      *
      * @param string $email Email address
      * @return object
+     * @throws InvalidTokenException If invalid token is used to make call
      */
     public function getAccountByEmail($email);
 

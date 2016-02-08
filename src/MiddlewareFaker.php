@@ -6,6 +6,7 @@
 
 namespace Threefold\Middleware;
 
+use GuzzleHttp\ClientInterface;
 use Psr\Log\LoggerInterface as Logger;
 
 /**
@@ -25,10 +26,10 @@ class MiddlewareFaker extends Middleware implements MiddlewareInterface
      * Middleware Faker constructor.
      *
      * @param Logger $log
-     * @param string $url
+     * @param ClientInterface $clientInterface
      * @param string $token
      */
-    public function __construct(Logger $log, $url, $token)
+    public function __construct(Logger $log, ClientInterface $clientInterface, $token)
     {
         $this->log = $log;
     }
@@ -582,11 +583,140 @@ class MiddlewareFaker extends Middleware implements MiddlewareInterface
      *
      * @param string $username
      * @param string $password
-     * @return object PHP object of user data
+     * @return string JSON string
      **/
     public function getSubscriptionsByLogin($username, $password)
     {
-
+        return '[
+    {
+        "temp":false,
+        "circStatus":"R",
+        "issuesRemaining":22,
+        "memberCat":null,
+        "memberOrg":"",
+        "renewMethod":"D",
+        "term":52,
+        "termNumber":1,
+        "subType":"",
+        "purchaseOrderNumber":null,
+        "startDate":"2015-06-22 00:00:00",
+        "expirationDate":"2016-06-13 00:00:00",
+        "finalExpirationDate":"2016-06-13 00:00:00",
+        "deliveryCode":"EM",
+        "rate":0.000000,
+        "remainingLiability":0.000000,
+        "promoCode":"COMP01",
+        "graceFlag":"Y",
+        "graceIssues":0,
+        "id":{
+            "customerNumber":"000072121625",
+            "subRef":"000029014905",
+            "item":{
+                "itemDescription":"Costa Rica Insider",
+                "itemNumber":"CRI",
+                "itemType":"CIR",
+                "serviceCode":" ",
+                "packageFlag":"N"
+            }
+        }
+    },
+    {
+        "temp":false,
+        "circStatus":"R",
+        "issuesRemaining":113,
+        "memberCat":null,
+        "memberOrg":"",
+        "renewMethod":"D",
+        "term":120,
+        "termNumber":1,
+        "subType":"",
+        "purchaseOrderNumber":null,
+        "startDate":"2015-08-01 00:00:00",
+        "expirationDate":"2025-07-01 00:00:00",
+        "finalExpirationDate":"2025-07-01 00:00:00",
+        "deliveryCode":"EM",
+        "rate":0.000000,
+        "remainingLiability":0.000000,
+        "promoCode":"COMP01",
+        "graceFlag":"Y",
+        "graceIssues":0,
+        "id":{
+            "customerNumber":"000072121625",
+            "subRef":"000029014917",
+            "item":{
+                "itemDescription":"IL\'s Explorers Club",
+                "itemNumber":"EXC",
+                "itemType":"CIR",
+                "serviceCode":"",
+                "packageFlag":"N"
+            }
+        }
+    },
+    {
+        "temp":false,
+        "circStatus":"R",
+        "issuesRemaining":113,
+        "memberCat":null,
+        "memberOrg":"",
+        "renewMethod":"D",
+        "term":120,
+        "termNumber":1,
+        "subType":"",
+        "purchaseOrderNumber":null,
+        "startDate":"2015-06-01 00:00:00",
+        "expirationDate":"2025-05-01 00:00:00",
+        "finalExpirationDate":"2025-05-01 00:00:00",
+        "deliveryCode":"EM",
+        "rate":0.000000,
+        "remainingLiability":0.000000,
+        "promoCode":"COMP01",
+        "graceFlag":"Y",
+        "graceIssues":0,
+        "id":{
+            "customerNumber":"000072121625",
+            "subRef":"000029015282",
+            "item":{
+                "itemDescription":"Platinum Circle",
+                "itemNumber":"PLC",
+                "itemType":"CIR",
+                "serviceCode":"",
+                "packageFlag":"N"
+            }
+        }
+    },
+    {
+        "temp":false,
+        "circStatus":"R",
+        "issuesRemaining":133,
+        "memberCat":null,
+        "memberOrg":"",
+        "renewMethod":"D",
+        "term":120,
+        "termNumber":1,
+        "subType":"",
+        "purchaseOrderNumber":null,
+        "startDate":"2015-06-01 00:00:00",
+        "expirationDate":"2025-05-01 00:00:00",
+        "finalExpirationDate":"2025-05-01 00:00:00",
+        "deliveryCode":"EM",
+        "rate":0.000000,
+        "remainingLiability":0.000000,
+        "promoCode":"COMP01",
+        "graceFlag":"Y",
+        "graceIssues":0,
+        "id":{
+            "customerNumber":"000072121625",
+            "subRef":"000029014918",
+            "item":{
+                "itemDescription":"Il Publisher\'s Roundtable",
+                "itemNumber":"RND",
+                "itemType":"CIR",
+                "serviceCode":" ",
+                "packageFlag":"N"
+            }
+        }
+    }
+]';
     }
 
     /**

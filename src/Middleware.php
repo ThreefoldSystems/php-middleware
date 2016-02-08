@@ -6,7 +6,7 @@
 
 namespace Threefold\Middleware;
 
-use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Threefold\Middleware\Exception\InvalidTokenException;
 use Threefold\Middleware\Exception\MiddlewareException;
@@ -30,31 +30,22 @@ class Middleware implements MiddlewareInterface
      */
     protected $token;
     /**
-     * The URL to use for the API calls.
-     *
-     * @var string
+     * @var \GuzzleHttp\ClientInterface
      */
-    protected $url;
-    /**
-     * @var \GuzzleHttp\Client
-     */
-    protected $guzzleClient;
+    protected $httpClient;
 
     /**
      * Constructor
      *
      * @param Logger $log Logger
-     * @param string $url
+     * @param ClientInterface $httpClient
      * @param string $token
      */
-    public function __construct(Logger $log, $url, $token)
+    public function __construct(Logger $log, ClientInterface $httpClient, $token)
     {
         $this->log = $log;
-        $this->url = $url;
         $this->token = $token;
-
-        $this->guzzleClient = new Client(['base_uri' => $this->url]);
-        $this->url = '';
+        $this->httpClient = $httpClient;
     }
 
     /**
@@ -68,8 +59,7 @@ class Middleware implements MiddlewareInterface
      */
     public function getCustomerNumberByContactIdOrgId($contactId, $orgId)
     {
-        $url = $this->url.'customer/contactid/'.$contactId.'/orgid/'.$orgId;
-
+        $url = 'customer/contactid/'.$contactId.'/orgid/'.$orgId;
         return $this->get($url);
     }
 
@@ -85,8 +75,7 @@ class Middleware implements MiddlewareInterface
      */
     public function getCustomerNumberByContactIdOrgIdStackName($contactId, $orgId, $stackName)
     {
-        $url = $this->url.'customer/contactid/'.$contactId.'/orgid/'.$orgId.'/stackname/'.$stackName;
-
+        $url = 'customer/contactid/'.$contactId.'/orgid/'.$orgId.'/stackname/'.$stackName;
         return $this->get($url);
     }
 
@@ -97,10 +86,11 @@ class Middleware implements MiddlewareInterface
      *
      * @param string $email Email address
      * @return object
+     * @throws InvalidTokenException If invalid token is used to make call
      */
     public function getAccountByEmail($email)
     {
-        $url = $this->url.'account/emailaddress?email='.urlencode($email);
+        $url = 'account/emailaddress?email='.urlencode($email);
         $this->http_args['timeout'] = '10';
 
         return $this->get($url);
@@ -119,7 +109,7 @@ class Middleware implements MiddlewareInterface
     {
         $username = base64_encode(stripslashes($username));
         $password = base64_encode($password);
-        $url = $this->url.'data/username/'.$username.'/password/'.$password;
+        $url = 'data/username/'.$username.'/password/'.$password;
 
         return $this->get($url);
     }
@@ -130,12 +120,11 @@ class Middleware implements MiddlewareInterface
      * Get customer subscriptions for a given customer ID, both active AND inactive
      *
      * @param string $customerId
-     * @return array
+     * @return string JSON
      */
     public function getSubscriptionsById($customerId)
     {
-        $url = $this->url.'sub/customernumber/'.$customerId;
-
+        $url = 'sub/customernumber/'.$customerId;
         return $this->get($url);
     }
 
@@ -149,8 +138,7 @@ class Middleware implements MiddlewareInterface
      */
     public function getActiveSubscriptionsById($customerId)
     {
-        $url = $this->url.'sub/active/customernumber/'.$customerId;
-
+        $url = 'sub/active/customernumber/'.$customerId;
         return $this->get($url);
     }
 
@@ -164,8 +152,7 @@ class Middleware implements MiddlewareInterface
      */
     public function getCustomerEmailById($customerId)
     {
-        $url = $this->url.'customer/emailaddress/customernumber/'.$customerId;
-
+        $url = 'customer/emailaddress/customernumber/'.$customerId;
         return $this->get($url);
     }
 
@@ -177,8 +164,7 @@ class Middleware implements MiddlewareInterface
      */
     public function getEmailFulfillmentHistoryById($customerId)
     {
-        $url = $this->url.'emailfulfillment/history/customernumber/'.$customerId;
-
+        $url = 'emailfulfillment/history/customernumber/'.$customerId;
         return $this->get($url);
     }
 
@@ -192,8 +178,7 @@ class Middleware implements MiddlewareInterface
      **/
     public function getCustomerAddressById($customerId)
     {
-        $url = $this->url.'postaladdress/customernumber/'.$customerId;
-
+        $url = 'postaladdress/customernumber/'.$customerId;
         return $this->get($url);
     }
 
@@ -210,8 +195,7 @@ class Middleware implements MiddlewareInterface
      */
     public function getAccountById($customerId)
     {
-        $url = $this->url.'account/customernumber/'.$customerId;
-
+        $url = 'account/customernumber/'.$customerId;
         return $this->get($url);
     }
 
@@ -229,7 +213,7 @@ class Middleware implements MiddlewareInterface
         $username = base64_encode($username);
         $password = base64_encode($password);
 
-        $url = $this->url.'customer/username/'.$username.'/password/'.$password;
+        $url = 'customer/username/'.$username.'/password/'.$password;
         $result = $this->get($url);
 
         return $result;
@@ -249,7 +233,7 @@ class Middleware implements MiddlewareInterface
      */
     public function getPostalAddressesByEmail($email)
     {
-        $url = $this->url.'postaladdress/emailaddress/'.urlencode($email);
+        $url = 'postaladdress/emailaddress/'.urlencode($email);
 
         return $this->get($url);
     }
@@ -267,7 +251,7 @@ class Middleware implements MiddlewareInterface
      */
     public function getLowestCustomerNumberByEmail($email)
     {
-        $url = $this->url.'customer/findlowestactivecustomernumber/emailaddress/'.urlencode($email);
+        $url = 'customer/findlowestactivecustomernumber/emailaddress/'.urlencode($email);
 
         return $this->get($url);
     }
@@ -277,14 +261,18 @@ class Middleware implements MiddlewareInterface
      *
      * @param string $username
      * @param string $password
-     * @return object PHP object of user data
+     * @return object|false PHP object of user data
+     *
      **/
     public function getSubscriptionsByLogin($username, $password)
     {
-        $content = $this->get_customer_by_login($username, $password);
+        $json = $this->getCustomerByLogin($username, $password);
+        $content = json_decode($json);
+
         if (isset($content->customerNumber) && !is_null($content->customerNumber)) {
-            return $this->get_subscriptions_by_id($content->customerNumber);
+            return $this->getSubscriptionsById($content->customerNumber);
         }
+        return false;
     }
 
     /**
@@ -297,8 +285,7 @@ class Middleware implements MiddlewareInterface
      */
     public function getCustomerListSignupsById($customerId)
     {
-        $url = $this->url.'adv/list/signup/customernumber/'.$customerId;
-
+        $url = 'adv/list/signup/customernumber/'.$customerId;
         return $this->get($url);
     }
 
@@ -312,8 +299,7 @@ class Middleware implements MiddlewareInterface
      */
     public function getAffiliateFactsById($customerId)
     {
-        $url = $this->url.'target/affiliate/fact/customernumber/'.$customerId;
-
+        $url = 'target/affiliate/fact/customernumber/'.$customerId;
         return $this->get($url);
     }
 
@@ -327,8 +313,7 @@ class Middleware implements MiddlewareInterface
      */
     public function getListFactsById($customerId)
     {
-        $url = $this->url.'target/list/fact/customernumber/'.$customerId;
-
+        $url = 'target/list/fact/customernumber/'.$customerId;
         return $this->get($url);
     }
 
@@ -344,7 +329,7 @@ class Middleware implements MiddlewareInterface
     {
         return 'skipped';
         // @todo Unskip
-        $url = $this->url.'target/affiliate/tag/'.$customerId;
+        $url = 'target/affiliate/tag/'.$customerId;
 
         return $this->get($url);
     }
@@ -356,16 +341,17 @@ class Middleware implements MiddlewareInterface
      *
      * @param string $url
      * @return array Associative array of returned data. Returns WP_Error object on error
-     * @throws MiddlewareException
+     * @throws MiddlewareException If invalid response status code received
+     * @throws InvalidTokenException If invalid token is used to make call
      */
     protected function get($url)
     {
-        $this->log->info('Middleware GET Request to: '.$url.' (token: '.$this->token.')');
+        $this->log->info('Middleware GET Request to: ' . $url . ' (token: ' . $this->token . ')');
 
         try {
             // Make request
             $headers = ['token' => $this->token];
-            $response = $this->guzzleClient->request(
+            $response = $this->httpClient->request(
                 'GET',
                 $url,
                 ['headers' => $headers]
