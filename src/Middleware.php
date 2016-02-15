@@ -8,6 +8,7 @@ namespace Threefold\Middleware;
 
 use GuzzleHttp\ClientInterface;
 use Psr\Log\LoggerInterface as Logger;
+use Threefold\Middleware\Exception\AdvantageConnectionException;
 use Threefold\Middleware\Exception\InvalidTokenException;
 use Threefold\Middleware\Exception\MiddlewareException;
 
@@ -285,7 +286,7 @@ class Middleware implements MiddlewareInterface
      */
     public function getCustomerListSignupsById($customerId)
     {
-        $url = 'adv/list/signup/customernumber/'.$customerId;
+        $url = 'adv/list/signup/customernumber/' . $customerId;
         return $this->get($url);
     }
 
@@ -372,14 +373,9 @@ class Middleware implements MiddlewareInterface
                     // No content - no results found
                     return false;
 
-//				case 422:
-//					// Some middleware calls return 422 HTTP code if nothing is found, others return a 200 code but empty content.
-//					$this->log->error('Result: ', $result);
-//					break;
-
                 default:
                     $this->log->error('Response contents', (array) $contents);
-                    throw new MiddlewareException('Bad result. Status Code: '.$statusCode);
+                    throw new MiddlewareException('Bad result. Status Code: '. $statusCode);
 
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
@@ -391,6 +387,14 @@ class Middleware implements MiddlewareInterface
                     // Rethrow everything else
                     throw $e;
             }
+        } catch (\GuzzleHttp\Exception\ServerException $e) {
+            // Advantage error
+            if ($e->getResponse()->getStatusCode() == 500
+                && strpos($e->getResponse()->getBody(), 'Failed, advantage connection') !== false) {
+
+                throw new AdvantageConnectionException('Unable to connect to Advantage', null, $e);
+            }
+
         }
     }
 

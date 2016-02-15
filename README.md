@@ -18,7 +18,7 @@ To install this package pull it in through Composer.
     
 If you want the latest dev version, use:
 
-    "threefold/middleware": "1.0.*-dev"
+    "threefold/middleware": "^1.0"
     
 ## Usage
 
@@ -95,3 +95,9 @@ Results:
         }
     ]
     
+### Exceptions
+
+The following exceptions might be thrown by the code:
+
+**\Threefold\Middleware\Exception\AdvantageConnectionException** - If unable to connect to Advantage system. This is
+an Advantage issue and nothing to do with this code. You should catch and handle this exception. 
