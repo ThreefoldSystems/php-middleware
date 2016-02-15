@@ -400,42 +400,38 @@ class Middleware implements MiddlewareInterface
      * @param string $type A string describing the type of calls we want e.g. get, put, update, delete
      * @param string $input A string describing what inputs to use. e.g. login, customer_ID
      * @return array Associative array of methods that match the requested parameters
-     **/
+     * @throws \Exception If invalid $type is given
+     */
     public function listMethods($type, $input)
     {
         $methods = get_class_methods($this);
 
         // Check and clean up the $type parameter
-        if (in_array($type, array('get', 'put', 'update', 'delete'))) {
-            $type .= '_';
-        } else {
-            trigger_error('Invalid Value: '.$type.' for Parameter $type');
-
-            return;
+        if (!in_array($type, array('get', 'put', 'update', 'delete'))) {
+            throw new \Exception('Invalid Value: '.$type.' for Parameter $type');
         }
 
         // Check and cleanup the $input parameter
-        if ($input == 'customer_ID') {
-            $input = '_by_id';
+        if ($input == 'customerId') {
+            $input = 'ById';
         } elseif ($input == 'login') {
-            $input = '_by_login';
+            $input = 'ByLogin';
         } elseif ($input == 'email') {
-            $input = '_by_email';
+            $input = 'ByEmail';
         } else {
-            trigger_error('Invalid Value: '.$input.' for Parameter $input');
-
-            return;
+            \Exception('Invalid Value: ' . $input. ' for Parameter $input');
         }
 
         // Cycle through all the methods, and find those that match the type and input
-        foreach ($methods as $m) {
-            if (strpos($m, $type) !== false) {
-                if (strpos($m, $input)) {
-                    $result[] = $m;
+        $results = [];
+        foreach ($methods as $method) {
+            if (strpos($method, $type) !== false) {
+                if (strpos($method, $input)) {
+                    $results[] = $method;
                 }
             }
         }
 
-        return $result;
+        return $results;
     }
 }
