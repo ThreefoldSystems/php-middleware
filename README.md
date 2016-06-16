@@ -1,5 +1,7 @@
 # php-middleware
-PHP code to connect to Pub Services middleware
+PHP code to connect to Pub Services middleware. Based on version 2.19.11
+of Middleware.
+
 
 
 ## Installation
