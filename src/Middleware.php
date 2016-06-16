@@ -83,8 +83,8 @@ class Middleware implements MiddlewareInterface
      */
     public function getCustomerByLogin($username, $password)
     {
-        $username = base64_encode($username);
-        $password = base64_encode($password);
+        $username = $username;
+        $password = $password;
 
         $url = 'customer/username/'.$username.'/password/'.$password;
         $result = $this->get($url);
@@ -747,57 +747,6 @@ class Middleware implements MiddlewareInterface
         }
     }
 
-    /**
-     * Helper Method for PUT requests
-     *
-     * @param $url
-     * @param $payload
-     * @return bool|string
-     * @throws MiddlewareException
-     */
-    private function put($url, $payload)
-    {
-        $this->log->info('Middleware PUT Request to: ' . $url);
-        try {
-            $headers = ['token' => $this->token,'Content-Type'=> 'application/json'];
-            $response = $this->httpClient->request(
-                'PUT',
-                $url,
-                ['headers' => $headers]
-            );
-            $statusCode = $response->getStatusCode();
-            $contents = $response->getBody()->getContents();
-            // Check result
-            switch ($statusCode) {
-                case 200:
-                    // This is a successful call and will return a php object
-                    $this->log->info('Response contents', (array)$contents);
-                    return $contents;
-                case 204:
-                    // No content - no results found
-                    return false;
-                default:
-                    $this->log->error('Response contents', (array)$contents);
-                    throw new MiddlewareException('Bad result. Status Code: ' . $statusCode);
-            }
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-            switch ($e->getResponse()->getStatusCode()) {
-                // Invalid token exception
-                case 403:
-                    throw new InvalidTokenException('Invalid token');
-                default:
-                    // Rethrow everything else
-                    throw $e;
-            }
-        } catch (\GuzzleHttp\Exception\ServerException $e) {
-            // Advantage error
-            if ($e->getResponse()->getStatusCode() == 500
-                && strpos($e->getResponse()->getBody(), 'Failed, advantage connection') !== false
-            ) {
-                throw new AdvantageConnectionException('Unable to connect to Advantage', null, $e);
-            }
-        }
-    }
 
     /**
      * A method to give a list of middleware calls by method
