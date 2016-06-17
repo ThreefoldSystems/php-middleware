@@ -218,10 +218,10 @@ class Middleware implements MiddlewareInterface
      * @link 1.12 findEmailAddressbyContactIdOrgIdStackName
      * @mw-wp get_customer_email_by_contact_id_org_id_stack_name
      */
-    public function getCustomerEmailByContactIdOrgIdStackName($contact_id, $org_id, $stack_name)
+    public function getCustomerEmailByContactIdOrgIdStackName($contactId, $orgId, $stackName)
     {
-        $url = $this->url . 'lookup/emailaddress/contactid/' . $contact_id . '/orgid/'
-                . $org_id . '/stack/' . $stack_name;
+        $url = $this->url . 'lookup/emailaddress/contactid/' . $contactId . '/orgid/'
+                . $orgId . '/stack/' . $stackName;
         return $this->get($url);
     }
     /**
@@ -316,10 +316,10 @@ class Middleware implements MiddlewareInterface
      * @link 2.6    addAccount
      * @mw-wp put_add_account_by_id_username_pass
      */
-    public function putAddAccountByIdUsernamePass($customer_id, $username, $password)
+    public function putAddAccountByIdUsernamePass($customerId, $username, $password)
     {
         $url = $this->url . 'account/authentication/create';
-        $payload = array('customerNumber' => $customer_id, 'username' => $username, 'password' => $password);
+        $payload = array('customerNumber' => $customerId, 'username' => $username, 'password' => $password);
         return $this->post($url, $payload);
     }
 
@@ -335,10 +335,10 @@ class Middleware implements MiddlewareInterface
      * @link 2.8    updatePassword
      * @mw-wp put_update_password
      */
-    public function putUpdatePassword($customer_id, $username, $password, $newPassword)
+    public function putUpdatePassword($customerId, $username, $password, $newPassword)
     {
         $url = $this->url . 'account/update/password';
-        $payload = array('customerNumber' => $customer_id, 'username' => $username,
+        $payload = array('customerNumber' => $customerId, 'username' => $username,
                             'existingPassword' => $password, 'newPassword' => $newPassword);
         return $this->post($url, $payload);
     }
@@ -457,13 +457,13 @@ class Middleware implements MiddlewareInterface
      * @link 7.8    addCustomerSignup
      * @mw-wp put_customer_signup_by_email
      */
-    public function putCustomerSignupByEmail($email, $list_code, $source_code, $attributes = null)
+    public function putCustomerSignupByEmail($email, $listCode, $sourceCode, $attributes = null)
     {
         $url = $this->url . 'list/customersignup/add';
         $payload = array(
             'emailAddress'  => $email,
-            'listCode'      => $list_code,
-            'sourceId'      => $source_code
+            'listCode'      => $listCode,
+            'sourceId'      => $sourceCode
         );
         if ($attributes !== null) {
             $payload = array_merge($payload, $attributes);
@@ -488,12 +488,12 @@ class Middleware implements MiddlewareInterface
      * @link 7.11   unsubCustomerSignup
      * @mw-wp put_unsub_customer_signup
      */
-    public function putUnsubCustomerSignup($list_code, $email_address, $reference = null)
+    public function putUnsubCustomerSignup($listCode, $emailAddress, $reference = null)
     {
         $url = $this->url . '/list/customersignup/unsub';
         $payload = array(
-            'listCode' => $list_code,
-            'emailAddress' => $email_address
+            'listCode' => $listCode,
+            'emailAddress' => $emailAddress
         );
         if ($reference) {
             $payload['referenceNumber'] = $reference;
@@ -600,9 +600,9 @@ class Middleware implements MiddlewareInterface
      * @link 12.4 findAffiliateTagsByEmailAddressOwningOrg
      * @mw-wp get_affiliate_tags_by_email_owning_org
      */
-    public function getAffiliateTagsByEmailOwningOrg($email, $owning_org)
+    public function getAffiliateTagsByEmailOwningOrg($email, $owningOrg)
     {
-        $url = $this->url . 'target/affiliate/tag/emailaddress/' . $email . '/owningorg/' . $owning_org;
+        $url = $this->url . 'target/affiliate/tag/emailaddress/' . $email . '/owningorg/' . $owningOrg;
         return $this->get($url);
     }
 
@@ -620,17 +620,17 @@ class Middleware implements MiddlewareInterface
      * @link 12.5 createAffiliateTags
      * @mw-wp put_create_affiliate_tags
      */
-    public function putCreateAffiliateTags($customer_id, $email, $tag_name, $tag_value, $owning_org = null)
+    public function putCreateAffiliateTags($customerId, $email, $tagName, $tagValue, $owningOrg = null)
     {
         $url = $this->url . 'middleware/target/affiliate/tag/create';
         $payload = array(
-            'customerNumber'    => $customer_id,
+            'customerNumber'    => $customerId,
             'emailAddress'      => $email,
-            'tagName'           => $tag_name,
-            'tagValue'          => $tag_value,
+            'tagName'           => $tagName,
+            'tagValue'          => $tagValue,
         );
-        if (!empty($owning_org)) {
-            $payload['ownOrg'] = $owning_org;
+        if (!empty($owningOrg)) {
+            $payload['ownOrg'] = $owningOrg;
         }
         return $this->post($url, $payload);
     }
