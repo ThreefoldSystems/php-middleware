@@ -7,8 +7,13 @@
 namespace Threefold\Middleware;
 
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ServerException;
 use Psr\Log\LoggerInterface as Logger;
 use Threefold\Middleware\Exception\AdvantageConnectionException;
+use Threefold\Middleware\Exception\EmailAlreadyExistsException;
+use Threefold\Middleware\Exception\InvalidCustomerException;
+use Threefold\Middleware\Exception\InvalidEntityException;
 use Threefold\Middleware\Exception\InvalidTokenException;
 use Threefold\Middleware\Exception\MiddlewareException;
 
@@ -18,19 +23,26 @@ use Threefold\Middleware\Exception\MiddlewareException;
  * @author Ciaran McGrath
  * @author Aine Hickey <ahickey@threefoldsystems.com>
  *
- * @see http://ezimages.net/middleware/MW%202%2019%2011%20REST%20Service%20Inventory_061316.pdf
- * @mw-wp is the function name in the wordpress middleware base plugin
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * Middleware documentation
+ * ------------------------
+ * This class links to the middleware API.
+ * @link http://ezimages.net/middleware/MW%202%2019%2011%20REST%20Service%20Inventory_061316.pdf
+ *
+ * Threefold Wordpress Plugin
+ * --------------------------
+ * Threefold Systems has a wordpress plugin for middleware. In the future we hope to use this library to make
+ * the calls to Middleware in this plugin. For this reason, the following custom phpdoc tag has been created
+ * @mw-wp Lists the function name in the wordpress middleware base plugin
  */
 class Middleware implements MiddlewareInterface
 {
     /**
-     * Object container for the logging system.
-     *
      * @var Logger
      */
     protected $log;
     /**
-     * @var string The token used to authenticate with the rest service.Inserted into the header as a value for 'token:'
+     * @var string The token used to authenticate with the REST service
      */
     protected $token;
     /**
@@ -52,66 +64,45 @@ class Middleware implements MiddlewareInterface
         $this->httpClient = $httpClient;
     }
 
-    /**
-     * Find customer number by contact ID and org ID
-     *
-     * Get the customer number from their M essage Central Contact ID and Org ID
-     *
-     * @deprecated
-     * @param $contactId
-     * @param $orgId
-     * @return mixed
-     *
-     * @mw-wp  get_customer_number_by_contact_id_org_id
-     */
-    public function getCustomerNumberByContactIdOrgId($contactId, $orgId)
-    {
-        $url = 'customer/contactid/'.$contactId.'/orgid/'.$orgId;
-        return $this->get($url);
-    }
+    /******************************************************************************************************************
+     * 1 Customer Services
+     **/
+
     /**
      * Find customer identifier
      *
-     * Get Customer ID From username and password
+     * 1.1 findCustomerIdentifier
      *
      * @param string $username
      * @param string $password
-     * @return array Associative array of returned data
-     *
-     * @link 1.1 findCustomerIdentifier
-     * @mw-wp get_customer_by_login
+     * @return string JSON with parameters: customerNumber, role
      */
-    public function getCustomerByLogin($username, $password)
+    public function findCustomerIdentifier($username, $password)
     {
-        $username = $username;
-        $password = $password;
-
-        $url = 'customer/username/'.$username.'/password/'.$password;
-        $result = $this->get($url);
-
-        return $result;
+        $url = 'customer/username/' . $username . '/password/' . $password;
+        return $this->get($url);
     }
 
     /**
-
-     * Find postal addresses by customer number
-     *
      * Get customer address by customer ID
      *
-     * @param string $customerId
-     * @return array Associative array of returned data
+     * 1.2 findPostalAddressesByCustomerNumber
      *
-     * @link 1.2 findPostalAddressesByCustomerNumber
-     * @mw-wp get_customer_address_by_id
+     * @param string $customerId
+     * @return string JSON with parameters including: countryCode, postalCode, street, street2, street3, city, state, county,
+     * firstName, middleInitial, lastName, companyName, departmentName, phoneNumber, phoneNumber2, phoneNumber3,
+     * faxNumber, suffix, title", emailAddress, birthDate
      **/
-    public function getCustomerAddressById($customerId)
+    public function findPostalAddressesByCustomerNumber($customerId)
     {
-        $url = 'postaladdress/customernumber/'.$customerId;
+        $url = 'postaladdress/customernumber/' . $customerId;
         return $this->get($url);
     }
 
     /**
      * Find postal addresses by email address
+     *
+     * 1.3 findPostalAddressesByEmailAddress
      *
      * Get the customer’s demographic information using their email address—this call is like the previous call, but
      * uses emailAddress instead of customerNumber
@@ -120,186 +111,169 @@ class Middleware implements MiddlewareInterface
      * The  data returned in this call can be used to pre-populate personalized fields on a website
      *
      * @param string $email
-     * @return array
+     * @return string JSON
      *
-     * @link 1.3 findPostalAddressesByEmailAddress
      * @mw-wp get_postal_addresses_by_email
      */
-    public function getPostalAddressesByEmail($email)
+    public function findPostalAddressesByEmailAddress($email)
     {
-        $url = 'postaladdress/emailaddress/'.urlencode($email);
-
+        $url = 'postaladdress/emailaddress/' . urlencode($email);
         return $this->get($url);
-    }
-
-    /**
-     * Update the postal address associated to the customer’s account
-     *
-     * @param $payload
-     * @return mixed
-     *
-     * @link 1.4    updatePostalAddress
-     * @mw-wp put_update_postal_address
-     */
-    public function putUpdatePostalAddress($payload)
-    {
-        $url = $this->url . 'customer/update/postaladdress';
-        $defaults = array('addressCode' => 'ADDR-01');
-        $payload = wp_parse_args($payload, $defaults);
-        return $this->post($url, $payload);
     }
 
     /**
      * Find email addresses by customer number
      *
-     * Get customer email address by customer ID
+     * 1.5 findEmailAddressesByCustomerNumber
      *
-     * @param       string $customerId
-     * @return      array An array of email addresses for the given customer ID
+     * @param string $customerId
+     * @return string JSON
      *
-     * @link    1.5 findEmailAddressesByCustomerNumber
-     * @mw-wp  get_customer_email_by_id
+     * @mw-wp get_customer_email_by_id
      */
-    public function getCustomerEmailById($customerId)
+    public function findEmailAddressesByCustomerNumber($customerId)
     {
-        $url = 'customer/emailaddress/customernumber/'.$customerId;
+        $url = 'customer/emailaddress/customernumber/' . $customerId;
         return $this->get($url);
-    }
-
-    /**
-     * Update the email address associated to the customer’s account
-     *
-     * @param       $customerNumber
-     * @param       $emailAddress
-     * @return      array|mixed|WP_Error
-     *
-     * @link 1.7    updateEmailAddress
-     * @mw-wp      put_update_email_address
-     */
-    public function putUpdateEmailAddress($customerNumber, $emailAddress)
-    {
-        $url = $this->url . 'customer/update/emailaddress';
-        $payload = array(
-            'emailAddress' => $emailAddress,
-            'customerNumber' => $customerNumber
-        );
-        return $this->post($url, $payload);
     }
 
     /**
      * Find customer number by contact ID, orgID and stack name
      *
-     * Get the customer number from their Message Central Contact ID, Org ID and Stack Name
+     * 1.11 findCustomerNumberByContactIdOrgIdStackName
      *
-     * @param $contactId
-     * @param $orgId
-     * @param $stackName
-     * @return mixed
+     * @param int $contactId Message Central contact ID.
+     * @param int $orgId The affiliate’s org ID in Message Central.
+     * @param MC|MC2 $stackName Message central stack name.
+     * @return string JSON
+     * @throws InvalidEntityException If invalid stackName is given
      *
-     * @link 1.11 findCustomerNumberByContactIdOrgIdStackName
      * @mw-wp get_customer_number_by_contact_id_org_id_stack_name
      */
-    public function getCustomerNumberByContactIdOrgIdStackName($contactId, $orgId, $stackName)
+    public function findCustomerNumberByContactIdOrgIdStackName($contactId, $orgId, $stackName)
     {
-        $url = 'customer/contactid/'.$contactId.'/orgid/'.$orgId.'/stackname/'.$stackName;
+        $url = 'customer/contactid/' . $contactId . '/orgid/' . $orgId . '/stackname/' . $stackName;
         return $this->get($url);
     }
 
     /**
      * Find customer email by contact ID, orgId and stack name
      *
-     * Get the customer email address from their Message Cntral Contact ID, Org ID and Stack Name
+     * 1.12 findEmailAddressbyContactIdOrgIdStackName
      *
-     * @param $contact_id
-     * @param $org_id
-     * @param $stack_name
-     * @return mixed
+     * @param int $contactId
+     * @param int $orgId
+     * @param string $stackName
+     * @return string JSON
      *
-     * @link 1.12 findEmailAddressbyContactIdOrgIdStackName
      * @mw-wp get_customer_email_by_contact_id_org_id_stack_name
      */
-    public function getCustomerEmailByContactIdOrgIdStackName($contactId, $orgId, $stackName)
+    public function findEmailAddressByContactIdOrgIdStackName($contactId, $orgId, $stackName)
     {
-        $url = $this->url . 'lookup/emailaddress/contactid/' . $contactId . '/orgid/'
-                . $orgId . '/stack/' . $stackName;
+        $url = 'lookup/emailaddress/contactid/' . $contactId . '/orgid/' . $orgId . '/stack/' . $stackName;
         return $this->get($url);
     }
+
     /**
      * Find lowest customer number by email address
      *
-     * Find the lowest customer number using the customer’s e-mail address
+     * 1.14 findLowestCustomerNumberByEmailAddress
      *
      * Service returns the lowest customer number for e-mail address supplied in the request URL.
      * Result set is not restricted to any portalCode/authGroup.
      *
      * @param string $email
-     * @return array
+     * @return string JSON - {"customerNumber":"123456789"}"
      *
-     * @link 1.14 findLowestCustomerNumberByEmailAddress
      * @mw-wp get_lowest_customer_number_by_email
      */
-    public function getLowestCustomerNumberByEmail($email)
+    public function findLowestCustomerNumberByEmailAddress($email)
     {
-        $url = 'customer/findlowestactivecustomernumber/emailaddress/'.urlencode($email);
-
+        $url = 'customer/findlowestactivecustomernumber/emailaddress/' . urlencode($email);
         return $this->get($url);
     }
 
     /**
      * Create a new customer
      *
+     * 1.16 createCustomer
+     *
      * Service returns the customer number for newly-created customer.
-     * Result set is not restricted to any portalCode/authGroup.
-     * The body of the response will return the following outputs
      *
      * @param $email
-     * @return array|mixed|WP_Error
-     *
-     * @link 1.16   createCustomer
+     * @param bool $skipDuplicateCheck (optional) Check to see if the email is already associated to a customer in
+     * Advantage. If set to true and email already exists, customer number will be returned.
+     * @param string $communicationPreference (optional) Set the preferred method of communication for a customer.
+     * @return string JSON - {"customerNumber":"123456789"}
+     * @throws EmailAlreadyExistsException If email already exists and skipDuplicatateCheck is false
+
      * @mw-wp put_create_customer_by_email
      */
-    public function putCreateCustomerByEmail($email)
+    public function createCustomer($email, $skipDuplicateCheck = false, $communicationPreference = 'E')
     {
-        $url = $this->url . 'customer/create';
-        $payload = array('emailAddress' => $email);
+        $url = 'customer/create';
+        $payload = [
+            'emailAddress'            => $email,
+            'skipDuplicateCheck'      => $skipDuplicateCheck,
+            'communicationPreference' => $communicationPreference,
+        ];
         return $this->post($url, $payload);
     }
 
     /**
+     * Find customer number by contact ID and org ID
+     *
+     * Get the customer number from their Message Central contact ID and org ID
+     *
+     * @deprecated
+     * @param $contactId
+     * @param $orgId
+     * @return mixed
+     *
+     * @mw-wp  get_customer_number_by_contact_id_org_id
+     */
+    public function findCustomerNumberByContactIdOrgId($contactId, $orgId)
+    {
+        $url = 'customer/contactid/' . $contactId . '/orgid/' . $orgId;
+        return $this->get($url);
+    }
+
+    /******************************************************************************************************************
+     * 2 Account Services
+     **/
+
+    /**
      * Find account by customer number
      *
-     * Find an account using the customer number.
+     * 2.2 findAccountByCustomerNumber
      *
      * Service returns the account information for the customer number supplied in the request URL.
      * The response is restricted to the portalCode/authGroup tied to the token.
      *
      * @param $customerId
-     * @return array
+     * @return string
      *
-     * @link 2.2 findAccountByCustomerNumber
      * @mw-wp get_account_by_id
      */
-    public function getAccountById($customerId)
+    public function findAccountByCustomerNumber($customerId)
     {
-        $url = 'account/customernumber/'.$customerId;
+        $url = 'account/customernumber/' . $customerId;
         return $this->get($url);
     }
 
     /**
      * Find account by email address
      *
-     * Get Customer account by email address
+     * 2.3 findAccountByEmailAddress
      *
      * @param string $email Email address
-     * @return object
-     * @throws InvalidTokenException If invalid token is used to make call
+     * @return string JSON
      *
-     * @link 2.3 findAccountByEmailAddress
      * @mw-wp get_account_by_email
      */
-    public function getAccountByEmail($email)
+    public function findAccountByEmailAddress($email)
     {
-        $url = 'account/emailaddress?email='.urlencode($email);
+        $url = 'account/emailaddress?email=' . urlencode($email);
         $this->http_args['timeout'] = '10';
 
         return $this->get($url);
@@ -308,123 +282,147 @@ class Middleware implements MiddlewareInterface
     /**
      * Add a customer account.
      *
-     * @param $customer_id
-     * @param $username
-     * @param $password
-     * @return array|mixed|WP_Error
+     * 2.6 addAccount
      *
-     * @link 2.6    addAccount
+     * @param string $customerId
+     * @param string $username
+     * @param string $password
+     * @return sring JSON
+     *
      * @mw-wp put_add_account_by_id_username_pass
      */
-    public function putAddAccountByIdUsernamePass($customerId, $username, $password)
+    public function addAccount($customerId, $username, $password)
     {
-        $url = $this->url . 'account/authentication/create';
-        $payload = array('customerNumber' => $customerId, 'username' => $username, 'password' => $password);
+        $url = 'account/authentication/create';
+        $payload = [
+            'customerNumber' => $customerId,
+            'username'       => $username,
+            'password'       => $password
+        ];
         return $this->post($url, $payload);
     }
 
     /**
      * Update the password associated to the customer’s account
      *
-     * @param $customer_id
-     * @param $username
-     * @param $password
-     * @param $newPassword
-     * @return mixed
+     * 2.8 updatePassword
      *
-     * @link 2.8    updatePassword
+     * @param string $customerId
+     * @param string $username
+     * @param string $existingPassword Existing password
+     * @param string $newPassword
+     * @return string JSON
+     *
      * @mw-wp put_update_password
      */
-    public function putUpdatePassword($customerId, $username, $password, $newPassword)
+    public function updatePassword($customerId, $username, $existingPassword, $newPassword)
     {
-        $url = $this->url . 'account/update/password';
-        $payload = array('customerNumber' => $customerId, 'username' => $username,
-                            'existingPassword' => $password, 'newPassword' => $newPassword);
+        $url = 'account/update/password';
+        $payload = [
+            'customerNumber'   => $customerId,
+            'username'         => $username,
+            'existingPassword' => $existingPassword,
+            'newPassword'      => $newPassword
+        ];
         return $this->post($url, $payload);
     }
+
+    /******************************************************************************************************************
+     * 3 Subscription Services
+     **/
 
     /**
      * Find active subscriptions by customer number
      *
-     * Get *ACTIVE* Customer Subscriptions for a given customer ID
+     * 3.1 findActiveSubscriptionsByCustomerNumber
      *
-     * @param string $customerId
-     * @return array
+     * @param string $customerNumber
+     * @return string JSON
      *
-     * @link 3.1 findActiveSubscriptionsByCustomerNumber
      * @mw-wp get_active_subscriptions_by_id
      */
-    public function getActiveSubscriptionsById($customerId)
+    public function findActiveSubscriptionsByCustomerNumber($customerNumber)
     {
-        $url = 'sub/active/customernumber/'.$customerId;
+        $url = 'sub/active/customernumber/' . $customerNumber;
         return $this->get($url);
     }
 
     /**
      * Find subscriptions by customer number
      *
-     * Get customer subscriptions for a given customer ID, both active AND inactive
+     * 3.2 findSubscriptionsByCustomerNumber
      *
-     * @param string $customerId
+     * @param string $customerNumber
      * @return string JSON
      *
-     * @link 3.2 findSubscriptionsByCustomerNumber
      * @mw-wp get_subscriptions_by_id
      */
-    public function getSubscriptionsById($customerId)
+    public function findSubscriptionsByCustomerNumber($customerNumber)
     {
-        $url = 'sub/customernumber/'.$customerId;
+        $url = 'sub/customernumber/' . $customerNumber;
         return $this->get($url);
     }
 
     /**
-     * Get the records combining subscription and postal address using a purchase order number.
+     * Find the records combining subscription and postal address using a purchase order number.
      *
-     * @param $purchaseOrderNumber
-     * @return array
+     * 3.11 findSubscriptionPostalAddressByPurchaseOrderNumber
      *
-     * @link 3.11 findSubscriptionPostalAddressByPurchaseOrderNumber
+     * @param string $purchaseOrderNumber
+     * @return string|false JSON or false if purchase order number not found
+     *
      * @mw-wp findSubscriptionsAndPostalAddressesByPurchaseOrderNumber
      */
-    public function getSubscriptionsAndPostalAddressesByPurchaseOrderNumber($purchaseOrderNumber)
+    public function findSubscriptionPostalAddressByPurchaseOrderNumber($purchaseOrderNumber)
     {
-        $url = $this->url . 'sub/postaladdress/purchaseordernumber/' . $purchaseOrderNumber;
+        $url = 'sub/postaladdress/purchaseordernumber/' . $purchaseOrderNumber;
         return $this->get($url);
     }
 
+    /******************************************************************************************************************
+     * 4 Order Services
+     **/
+
+    /******************************************************************************************************************
+     * 5 Data Services
+     **/
+
     /**
-     * Find login aggregate data
+     * Find login aggregate data for a given username and password
      *
-     * Get Customer Aggregate Data for a given Username and Password
+     * 5.3 findLoginAggregateData
      *
      * @param string $username An advantage username
      * @param string $password An advantage password to accompany the Username
-     * @return object
+     * @return string JSON
      *
-     * @link 5.3 findLoginAggregateData
      * @mw-wp get_aggregate_data_by_login
      */
-    public function getAggregateDataByLogin($username, $password)
+    public function findLoginAggregateData($username, $password)
     {
-        $username = base64_encode(stripslashes($username));
-        $password = base64_encode($password);
-        $url = 'data/username/'.$username.'/password/'.$password;
-
+        $url = 'data/username/' . $username . '/password/' . $password;
         return $this->get($url);
     }
+
+    /******************************************************************************************************************
+     * 6 AMB Services
+     **/
+
+    /******************************************************************************************************************
+     * 7 List Services
+     **/
 
     /**
      * Find customer list signups by customer number
      *
-     * Find the customer’s list signups using the customer number.
+     * 7.1 findCustomerListSignupsByCustomerNumber
      *
-     * @param $customerId
-     * @return array
+     * @param string $customerId
+     * @return string JSON
      *
-     * @link 7.1 findCustomerListSignupsByCustomerNumber
      * @mw-wp get_customer_list_signups_by_id
      */
-    public function getCustomerListSignupsById($customerId)
+    public function findCustomerListSignupsByCustomerNumber($customerId)
     {
         $url = 'adv/list/signup/customernumber/' . $customerId;
         return $this->get($url);
@@ -433,33 +431,35 @@ class Middleware implements MiddlewareInterface
     /**
      * Find the customer's list signups using their email address.
      *
-     * @param $email
-     * @return array
+     * 7.3 findCustomerListSignupsByEmailAddress
      *
-     * @link7.3 findCustomerListSignupsByEmailAddress
+     * @param $email
+     * @return string JSON
+     *
      * @mw-wp get_customer_list_signups_by_email
      */
-    public function getCustomerListSignupsByEmail($email)
+    public function findCustomerListSignupsByEmailAddress($email)
     {
-        $url = $this->url . 'adv/list/signup/emailaddress/' . $email;
+        $url = 'adv/list/signup/emailaddress/' . $email;
         return $this->get($url);
     }
 
     /**
      * Add a customer signup to a list.
      *
-     * @param      $email
-     * @param      $list_code
-     * @param      $source_code
-     * @param null $attributes
-     * @return array|mixed|WP_Error
+     * 7.8 addCustomerSignup
      *
-     * @link 7.8    addCustomerSignup
+     * @param string $email
+     * @param string $listCode Code that identifies the list to which the customer will subscribe.
+     * @param string $sourceCode Source from which signup originated.
+     * @param array $attributes (optional)
+     * @return string JSON
+     *
      * @mw-wp put_customer_signup_by_email
      */
-    public function putCustomerSignupByEmail($email, $listCode, $sourceCode, $attributes = null)
+    public function addCustomerSignup($email, $listCode, $sourceCode, $attributes = null)
     {
-        $url = $this->url . 'list/customersignup/add';
+        $url = 'list/customersignup/add';
         $payload = array(
             'emailAddress'  => $email,
             'listCode'      => $listCode,
@@ -474,155 +474,148 @@ class Middleware implements MiddlewareInterface
     /**
      * Unsubscribe a customer signup.
      *
-     * @param      $list_code  string
-     *                         Code that identifies the list from which the customer will unsubscribe
-     * @param      $email_address string
-     *                          The customer’s e-mail address
-     * @param null $reference string
-     *                          Reference number to track this unsub. This can be any random, alphanumeric ID
-     *                          If no reference number is supplied, MW2 generates it by applying the hash
-     *                          algorithm on the other required fields supplied.
+     * 7.11 unsubCustomerSignup
      *
-     * @return array|mixed|WP_Error
+     * @param string $listCode Code that identifies the list from which the customer will unsubscribe
+     * @param string $email The customer’s e-mail address
+     * @param string $referenceNumber (optional) Reference number to track this unsub. This can be any random, alphanumeric ID
+     * If no reference number is supplied, MW2 generates it by applying the hash algorithm on the other required fields
+     * supplied.
+     * @return string JSON
      *
-     * @link 7.11   unsubCustomerSignup
      * @mw-wp put_unsub_customer_signup
      */
-    public function putUnsubCustomerSignup($listCode, $emailAddress, $reference = null)
+    public function unsubscribeCustomerSignup($listCode, $email, $referenceNumber = null)
     {
-        $url = $this->url . '/list/customersignup/unsub';
+        $url = '/middleware/list/customersignup/unsub';
         $payload = array(
-            'listCode' => $listCode,
-            'emailAddress' => $emailAddress
+            'listCode'     => $listCode,
+            'emailAddress' => $email,
         );
-        if ($reference) {
-            $payload['referenceNumber'] = $reference;
+        if ($referenceNumber) {
+            $payload['referenceNumber'] = $referenceNumber;
         }
         return $this->post($url, $payload);
     }
 
+    /******************************************************************************************************************
+     * 8 Email Services
+     **/
+
     /**
      * Get email fulfillment history for a given customer ID
      *
-     * @param string $customerId
-     * @return array
+     * 8.1 findEmailFulfillmentHistoryByCustomerNumber
      *
-     * @link 8.1 findEmailFulfillmentHistoryByCustomerNumber
+     * @param string $customerNumber
+     * @return string JSON
+     *
      * @mw-wp get_email_fulfillment_history_by_id
      */
-    public function getEmailFulfillmentHistoryById($customerId)
+    public function findEmailFulfillmentHistoryByCustomerNumber($customerNumber)
     {
-        $url = 'emailfulfillment/history/customernumber/'.$customerId;
+        $url = 'emailfulfillment/history/customernumber/' . $customerNumber;
         return $this->get($url);
     }
 
-    /**
-     * Get Customer subscriptions by login
-     *
-     * @param string $username
-     * @param string $password
-     * @return object|false PHP object of user data
-     *
+    /******************************************************************************************************************
+     * 9 Geolocation Services
      **/
-    public function getSubscriptionsByLogin($username, $password)
-    {
-        $json = $this->getCustomerByLogin($username, $password);
-        $content = json_decode($json);
 
-        if (isset($content->customerNumber) && !is_null($content->customerNumber)) {
-            return $this->getSubscriptionsById($content->customerNumber);
-        }
-        return false;
-    }
+    /******************************************************************************************************************
+     * 10 Marketing Services
+     **/
+
+    /******************************************************************************************************************
+     * 11 Open Call Services
+     **/
+
+    /******************************************************************************************************************
+     * 12 Targeting Services
+     **/
 
     /**
      * Find affiliate facts by customer number
      *
-     * Retrieve affiliate facts based off of a customer number.
+     * 12.1 findAffiliateFactsByCustomerNumber
      *
-     * @param $customerId
-     * @return array
+     * @param string $customerNumber
+     * @return string JSON
      *
-     * @link 12.1 findAffiliateFactsByCustomerNumber
      * @mw-wp get_affiliate_facts_by_id
      */
-    public function getAffiliateFactsById($customerId)
+    public function findAffiliateFactsByCustomerNumber($customerNumber)
     {
-        $url = 'target/affiliate/fact/customernumber/'.$customerId;
+        $url = 'target/affiliate/fact/customernumber/' . $customerNumber;
         return $this->get($url);
     }
 
     /**
      * Find list facts by customer number
      *
-     * Retrieve list facts based off of a customer number
+     * 12.2 findListFactsByCustomerNumber
      *
-     * @param $customerId
-     * @return array
+     * @param $customerNumber
+     * @return string JSON
      *
-     * @link 12.2 findListFactsByCustomerNumber
      * @mw-wp get_list_facts_by_id
      */
-    public function getListFactsById($customerId)
+    public function findListFactsByCustomerNumber($customerNumber)
     {
-        $url = 'target/list/fact/customernumber/'.$customerId;
+        $url = 'target/list/fact/customernumber/' . $customerNumber;
         return $this->get($url);
     }
 
     /**
      * Find affiliate tags by customer number
      *
-     * Retrieve affiliate tagging information based off of a customer number
+     * 12.3 findAffiliateTagsByCustomerNumber
      *
-     * @param $customerId
-     * @return array
-     *
-     * @link 12.3 findAffiliateTagsByCustomerNumber
+     * @param string $customerNumber
+     * @return string|false JSON
+
      * @mw-wp get_affiliate_tags_by_id
      */
-    public function getAffiliateTagsById($customerId)
+    public function findAffiliateTagsByCustomerNumber($customerNumber)
     {
-        return 'skipped';
-        // @todo Unskip
-        $url = 'target/affiliate/tag/'.$customerId;
-
+        $url = 'target/affiliate/tag/customernumber/' . $customerNumber;
         return $this->get($url);
     }
 
     /**
      * Retrieve affiliate tagging information based off of an email address and owning org
      *
-     * @param $email
-     * @param $owning_org
+     * 12.4 findAffiliateTagsByEmailAddressOwningOrg
      *
-     * @return array
+     * @param string $email
+     * @param string $owningOrg Unique identifier of organization.
+     * @return string JSON
      *
-     * @link 12.4 findAffiliateTagsByEmailAddressOwningOrg
      * @mw-wp get_affiliate_tags_by_email_owning_org
      */
-    public function getAffiliateTagsByEmailOwningOrg($email, $owningOrg)
+    public function findAffiliateTagsByEmailAddressOwningOrg($email, $owningOrg)
     {
-        $url = $this->url . 'target/affiliate/tag/emailaddress/' . $email . '/owningorg/' . $owningOrg;
+        $url = 'target/affiliate/tag/emailaddress/' . urlencode($email) . '/owningorg/' . $owningOrg;
         return $this->get($url);
     }
 
     /**
      * Create an Affiliate Tag
      *
-     * @param      $customer_id
-     * @param      $email
-     * @param      $tag_name
-     * @param      $tag_value
-     * @param null $owning_org
+     * 12.5 createAffiliateTags
      *
-     * @return array|mixed|WP_Error
+     * @param string $customerId
+     * @param string $email
+     * @param string $tagName
+     * @param string $tagValue
+     * @param string $owningOrg (optional)
+     * @return string
      *
-     * @link 12.5 createAffiliateTags
      * @mw-wp put_create_affiliate_tags
      */
-    public function putCreateAffiliateTags($customerId, $email, $tagName, $tagValue, $owningOrg = null)
+    public function createAffiliateTags($customerId, $email, $tagName, $tagValue, $owningOrg = null)
     {
-        $url = $this->url . 'middleware/target/affiliate/tag/create';
+        $url = 'target/affiliate/tag/create';
         $payload = array(
             'customerNumber'    => $customerId,
             'emailAddress'      => $email,
@@ -634,6 +627,12 @@ class Middleware implements MiddlewareInterface
         }
         return $this->post($url, $payload);
     }
+
+    /******************************************************************************************************************
+     * 13 Owningorg Services
+     **/
+
+    /******************************************************************************************************************/
 
     /**
      * Make GET request
@@ -658,6 +657,7 @@ class Middleware implements MiddlewareInterface
             );
             $statusCode = $response->getStatusCode();
             $contents = $response->getBody()->getContents();
+
             // Check result
             switch ($statusCode) {
                 case 200:
@@ -671,8 +671,11 @@ class Middleware implements MiddlewareInterface
                     $this->log->error('Response contents', (array)$contents);
                     throw new MiddlewareException('Bad result. Status Code: ' . $statusCode);
             }
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
+        } catch (ClientException $e) {
             switch ($e->getResponse()->getStatusCode()) {
+                // 422 Unprocessable Entity
+                case 422:
+                    throw new InvalidEntityException('StackName is not valid');
                 // Invalid token exception
                 case 403:
                     throw new InvalidTokenException('Invalid token');
@@ -680,7 +683,7 @@ class Middleware implements MiddlewareInterface
                     // Rethrow everything else
                     throw $e;
             }
-        } catch (\GuzzleHttp\Exception\ServerException $e) {
+        } catch (ServerException $e) {
             // Advantage error
             if ($e->getResponse()->getStatusCode() == 500
                 && strpos($e->getResponse()->getBody(), 'Failed, advantage connection') !== false
@@ -699,7 +702,7 @@ class Middleware implements MiddlewareInterface
      * @throws InvalidCustomerException
      * @throws MiddlewareException
      */
-    private function post($url, $payload)
+    protected function post($url, $payload)
     {
         $this->log->info('Middleware POST Request to: ' . $url);
         try {
@@ -712,6 +715,7 @@ class Middleware implements MiddlewareInterface
             $statusCode = $response->getStatusCode();
             $contents = $response->getBody()->getContents();
             $this->log->info('Response from call', ['response' => $response, 'url' => $url, 'payload'=> $payload]);
+
             // Check result
             switch ($statusCode) {
                 case 200:
@@ -725,7 +729,8 @@ class Middleware implements MiddlewareInterface
                     $this->log->error('Response contents', (array)$contents);
                     throw new MiddlewareException('Bad result. Status Code: ' . $statusCode);
             }
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
+
+        } catch (ClientException $e) {
             switch ($e->getResponse()->getStatusCode()) {
                 // Invalid token exception
                 case 403:
@@ -734,54 +739,30 @@ class Middleware implements MiddlewareInterface
                     // Rethrow everything else
                     throw $e;
             }
-        } catch (\GuzzleHttp\Exception\ServerException $e) {
-            // Advantage error
-            if ($e->getResponse()->getStatusCode() == 500) {
-                if (strpos($e->getResponse()->getBody(), 'Failed, advantage connection') !== false) {
-                    throw new AdvantageConnectionException('Unable to connect to Advantage', null, $e);
-                } elseif (strpos($e->getResponse()->getBody(), 'Customer not found for the update') !== false) {
-                    throw new InvalidCustomerException('Customer not found for the update', null, $e);
-                }
+
+        } catch (ServerException $e) {
+
+            if ($e->getResponse()->getStatusCode() !== 500) {
+                throw $e;
             }
-            throw $e;
-        }
-    }
 
-
-    /**
-     * A method to give a list of middleware calls by method
-     *
-     * @param string $type A string describing the type of calls we want e.g. get, put, update, delete
-     * @param string $input A string describing what inputs to use. e.g. login, customer_ID
-     * @return array Associative array of methods that match the requested parameters
-     * @throws \Exception If invalid $type is given
-     */
-    public function listMethods($type, $input)
-    {
-        $methods = get_class_methods($this);
-        // Check and clean up the $type parameter
-        if (!in_array($type, array('get', 'put', 'update', 'delete'))) {
-            throw new \Exception('Invalid Value: '.$type.' for Parameter $type');
-        }
-        // Check and cleanup the $input parameter
-        if ($input == 'customerId') {
-            $input = 'ById';
-        } elseif ($input == 'login') {
-            $input = 'ByLogin';
-        } elseif ($input == 'email') {
-            $input = 'ByEmail';
-        } else {
-            \Exception('Invalid Value: ' . $input. ' for Parameter $input');
-        }
-        // Cycle through all the methods, and find those that match the type and input
-        $results = [];
-        foreach ($methods as $method) {
-            if (strpos($method, $type) !== false) {
-                if (strpos($method, $input)) {
-                    $results[] = $method;
-                }
+            switch (true) {
+                // Advantage error
+                case (strpos($e->getResponse()->getBody(), 'Failed, advantage connection') !== false):
+                    throw new AdvantageConnectionException('Unable to connect to Advantage');
+                // Invalid customer
+                case (strpos($e->getResponse()->getBody(), 'Customer not found for the update') !== false):
+                    throw new InvalidCustomerException('Customer not found for the update');
+                // Advantage customer not found
+                case (strpos($e->getMessage(), 'Advantage customer not found') !== false):
+                    throw new InvalidCustomerException('Advantage customer not found');
+                // Email already exists
+                case (strpos($e->getMessage(), 'Email') !== false
+                    && strpos($e->getMessage(), 'already exists') !== false):
+                    throw new EmailAlreadyExistsException('Email already exists');
+                default:
+                    throw $e;
             }
         }
-        return $results;
     }
 }
