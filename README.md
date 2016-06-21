@@ -1,13 +1,19 @@
 # php-middleware
-PHP code to connect to Pub Services middleware
 
+
+
+PHP code to connect to Pub Services Middleware.
+
+* Version: 2.0.0
+* Middleware version: 2.19.11
+* URL: http://ezimages.net/middleware/MW%202%2019%2011%20REST%20Service%20Inventory_061316.pdf
 
 ## Installation
 
 To install this package pull it in through Composer.
 
     "require": {
-        "threefold/middleware": "*"
+        "threefold/middleware": "2.*"
     },
     "repositories": [
         {
@@ -49,13 +55,11 @@ $middleware = $factory->create($token, MiddlewareFactory::MIDDLEWARE_UAT);
 $middleware = $factory->create($token, MiddlewareFactory::MIDDLEWARE_FAKE);
 ```
     
-**If you use the fake class, know that not all methods have been faked. Please let me know if you need one faked!**
-    
 ### Calls
 
 The list of all possible calls are in the MiddlewareInterface.
 
-    $results = $middleware->getAccountByEmail('fred@example.com'); 
+    $results = $middleware->findCustomerIdentifier('fred', 'fred123'); 
     
 The results will come back as a JSON string.
     
@@ -71,29 +75,15 @@ Code:
     $factory = new \Threefold\Middleware\MiddlewareFactory($log);
     $middleware = $factory->create($token, \Threefold\Middleware\MiddlewareFactory::MIDDLEWARE_UAT);
  
-    $results = $middleware->getAccountByEmail('fred@example.com');
+    $results = $middleware->findCustomerIdentifier('fred', 'fred123');
     
     
 Results:
     
-    [
-      {
-        "cviNbr": "000001234567",
-        "customerNumber": "000087654321",
-        "role": "",
-        "temp": false,
-        "password": "xxx",
-        "id": {
-          "userName": "FRED123",
-          "portalCode": {
-            "authGroup": "xxx"
-          },
-          "authType": "L"
-        },
-        "denyAccess": "N",
-        "authStatus": "A"
-        }
-    ]
+    {
+        "customerNumber": "0000123456",
+        "role": ""
+    }
     
 ### Exceptions
 
