@@ -66,6 +66,20 @@ interface MiddlewareInterface
     public function findEmailAddressesByCustomerNumber($customerId);
 
     /**
+     * Find direct debit information associated with a email.
+     *
+     * x.x N/A
+     *
+     * @param string $email
+     *
+     * @return string JSON
+     *
+     * @mw-wp n/a
+     */
+
+    public function findDirectDebitByEmail($email);
+
+    /**
      * Find direct debit information associated with a customer number.
      *
      * 1.9 findDirectDebitByCustomerNumber

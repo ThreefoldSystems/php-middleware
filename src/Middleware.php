@@ -137,6 +137,28 @@ class Middleware implements MiddlewareInterface
         return $this->get($url);
     }
 
+
+    /**
+     * Find direct debit information associated with a email.
+     *
+     * x.x N/A
+     *
+     * @param string $email
+     *
+     * @return string JSON
+     *
+     * @mw-wp n/a
+     */
+    public function findDirectDebitByEmail($email)
+    {
+        $customerId = $this->findLowestCustomerNumberByEmailAddress($email);
+        if(empty($customerId)){
+            return false;
+        }
+        return $this->findEmailAddressesByCustomerNumber($customerId);
+    }
+
+
     /**
      * Find direct debit information associated with a customer number.
      *
@@ -149,7 +171,7 @@ class Middleware implements MiddlewareInterface
      */
     public function findDirectDebitByCustomerNumber($customerId)
     {
-        $url = 'middleware/directdebit/customernumber/' . $customerId;
+        $url = 'directdebit/customernumber/' . $customerId;
         return $this->get($url);
     }
 
