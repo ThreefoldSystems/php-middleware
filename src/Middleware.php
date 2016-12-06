@@ -138,6 +138,22 @@ class Middleware implements MiddlewareInterface
     }
 
     /**
+     * Find direct debit information associated with a customer number.
+     *
+     * 1.9 findDirectDebitByCustomerNumber
+     *
+     * @param string $customerId
+     * @return string JSON
+     *
+     * @mw-wp n/a
+     */
+    public function findDirectDebitByCustomerNumber($customerId)
+    {
+        $url = 'middleware/directdebit/customernumber/' . $customerId;
+        return $this->get($url);
+    }
+
+    /**
      * Find customer number by contact ID, orgID and stack name
      *
      * 1.11 findCustomerNumberByContactIdOrgIdStackName
