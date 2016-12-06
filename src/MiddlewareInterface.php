@@ -6,25 +6,8 @@
 
 namespace Threefold\Middleware;
 
-use GuzzleHttp\ClientInterface;
-use \Psr\Log\LoggerInterface as Logger;
-
 interface MiddlewareInterface
 {
-    /**
-     * Constructor
-     *
-     * @param Logger $log Logger
-     * @param ClientInterface $httpClient
-     * @param string $token
-     */
-    public function __construct(Logger $log, ClientInterface $httpClient, $token)
-    {
-        $this->log = $log;
-        $this->token = $token;
-        $this->httpClient = $httpClient;
-    }
-
     /******************************************************************************************************************
      * 1 Customer Services
      **/
@@ -81,6 +64,18 @@ interface MiddlewareInterface
      * @mw-wp get_customer_email_by_id
      */
     public function findEmailAddressesByCustomerNumber($customerId);
+
+    /**
+     * Find direct debit information associated with a customer number.
+     *
+     * 1.9 findDirectDebitByCustomerNumber
+     *
+     * @param string $customerId
+     * @return string JSON
+     *
+     * @mw-wp n/a
+     */
+    public function findDirectDebitByCustomerNumber($customerId);
 
     /**
      * Find customer number by contact ID, orgID and stack name
