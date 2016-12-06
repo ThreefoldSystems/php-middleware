@@ -151,11 +151,12 @@ class Middleware implements MiddlewareInterface
      */
     public function findDirectDebitByEmail($email)
     {
-        $customerId = $this->findLowestCustomerNumberByEmailAddress($email);
-        if(empty($customerId)){
+        $customer= $this->findLowestCustomerNumberByEmailAddress($email);
+        $customer = json_decode($customer);
+        if(empty($customer)){
             return false;
         }
-        return $this->findEmailAddressesByCustomerNumber($customerId);
+        return $this->findDirectDebitByCustomerNumber($customer->customerNumber);
     }
 
 
