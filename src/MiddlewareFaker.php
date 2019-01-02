@@ -730,9 +730,9 @@ id:{
     }
 
     /**
-     * Find the customer's lists by listcode and email address.
+     * Find the customer’s list signups using their email address and listCode
      *
-     * 7.5 findCustomerListsByListCodeAndEmail
+     * 7.4 findCustomerListSignupsByEmailAddressListCode
      *
      * @param $listcode
      * @param $email
