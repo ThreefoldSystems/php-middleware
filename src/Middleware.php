@@ -484,6 +484,22 @@ class Middleware implements MiddlewareInterface
     }
 
     /**
+     * Find the customer’s list signups using their email address and listCode
+     *
+     * 7.4 findCustomerListSignupsByEmailAddressListCode
+     *
+     * @param $listcode
+     * @param $email
+     * @return string JSON
+     *
+     */
+    public function findCustomerListSignupsByEmailAddressListCode($listcode,$email)
+    {
+        $url = 'adv/list/signup/listcode/' . $listcode . '/emailaddress/' . $email;
+        return $this->get($url);
+    }
+
+    /**
      * Add a customer signup to a list.
      *
      * 7.8 addCustomerSignup

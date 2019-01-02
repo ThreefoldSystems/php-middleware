@@ -321,6 +321,18 @@ interface MiddlewareInterface
     public function findCustomerListSignupsByEmailAddress($email);
 
     /**
+     * Find the customer’s list signups using their email address and listCode
+     *
+     * 7.4 findCustomerListSignupsByEmailAddressListCode
+     *
+     * @param $listcode
+     * @param $email
+     * @return string JSON
+     *
+     */
+    public function findCustomerListSignupsByEmailAddressListCode($listcode,$email);
+
+    /**
      * Add a customer signup to a list.
      *
      * 7.8 addCustomerSignup
