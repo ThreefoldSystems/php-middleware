@@ -730,6 +730,41 @@ id:{
     }
 
     /**
+     * Find the customer’s list signups using their email address and listCode
+     *
+     * 7.4 findCustomerListSignupsByEmailAddressListCode
+     *
+     * @param $listcode
+     * @param $email
+     * @return string JSON
+     *
+     */
+    public function findCustomerListSignupsByEmailAddressListCode($listcode,$email)
+    {
+        return '{
+  "status": "A",
+  "referenceNumber": "",
+  "customerNumber": "000012345678",
+  "emailAddress": "GCOSTANZA@PUBSVS.COM",
+  "addressCode": "",
+  "listCode": "EALERT",
+  "profileId": "000000000000",
+  "dateAdded": "2008-08-27",
+  "emailId": "000000352858",
+  "listDescription": "190SBAND Buyers",
+  "demographicData": "X190J808",
+  "deliveryType": "",
+  "listCategory": "190",
+  "sourceCode": "X190J808",
+  "confirmationDate": null,
+  "originalSourceCode": "X190J808",
+  "isDoubleOptIn": false,
+  "reasonCode": "",
+  "lastEnrollment": null
+}';
+    }
+
+    /**
      * Add a customer signup to a list.
      *
      * 7.8 addCustomerSignup
