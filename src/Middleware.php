@@ -565,6 +565,26 @@ class Middleware implements MiddlewareInterface
      * 10 Marketing Services
      **/
 
+    /**
+     * Get the items and choices associated with a promotion code
+     *
+     * 10.3 findItemsAndChoicesByPromoCode
+     *
+     * @param string $customerNumber
+     * @return string JSON
+     *
+     * @mw-wp get_affiliate_facts_by_id
+     */
+    public function findItemsAndChoicesByPromoCode($promoCode,$currencies = array('GBP'))
+    {
+        $url = 'promo/findwithitemsandchoices/';
+        $payload = array(
+            'promoCode'  => $promoCode,
+            'currencies' => $currencies,
+        );
+        return $this->post($url, $payload);
+    }
+
     /******************************************************************************************************************
      * 11 Open Call Services
      **/
