@@ -570,12 +570,13 @@ class Middleware implements MiddlewareInterface
      *
      * 10.3 findItemsAndChoicesByPromoCode
      *
-     * @param string $customerNumber
+     * @param string $promoCode
+     * @param array $currencies
      * @return string JSON
      *
      * @mw-wp get_affiliate_facts_by_id
      */
-    public function findItemsAndChoicesByPromoCode($promoCode,$currencies = array('GBP'))
+    public function findItemsAndChoicesByPromoCode($promoCode,$currencies)
     {
         $url = 'promo/findwithitemsandchoices/';
         $payload = array(

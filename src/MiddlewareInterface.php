@@ -375,6 +375,17 @@ interface MiddlewareInterface
      * 10 Marketing Services
      **/
 
+    /**
+     * Get the items and choices associated with a promotion code
+     *
+     * 10.3 findItemsAndChoicesByPromoCode
+     *
+     * @param string $promoCode
+     * @param array $currencies
+     * @return string JSON
+     */
+    public function findItemsAndChoicesByPromoCode($promoCode,$currencies);
+
     /******************************************************************************************************************
      * 11 Open Call Services
      **/
