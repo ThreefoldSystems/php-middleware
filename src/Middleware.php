@@ -573,8 +573,6 @@ class Middleware implements MiddlewareInterface
      * @param string $promoCode
      * @param array $currencies
      * @return string JSON
-     *
-     * @mw-wp get_affiliate_facts_by_id
      */
     public function findItemsAndChoicesByPromoCode($promoCode,$currencies)
     {
