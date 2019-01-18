@@ -855,6 +855,90 @@ bounceReason: ""
      * 10 Marketing Services
      **/
 
+    /**
+     * Get the items and choices associated with a promotion code
+     *
+     * 10.3 findItemsAndChoicesByPromoCode
+     *
+     * @param string $promoCode
+     * @param array $currencies
+     * @return string JSON
+     */
+    public function findItemsAndChoicesByPromoCode($promoCode,$currencies)
+    {
+        return '{
+    "promotionCode": "EZHAUBZZ",
+    "narrative": "",
+    "description1": "ZHA 1118 EURO DIES (360) - OP",
+    "description2": "360DMBG",
+    "url": "",
+    "imagePath": "",
+    "creditPolicy": "This promotion does set subscription cancellation handling.\n - partial credit only   1 days after order posting\n - no credit   2 days after order posting\nThis promotion does not set any credit calculation on product return.\nShipping charges are credited on return.\n",
+    "active": true,
+    "mailDate": null,
+    "publicationCode": "ZHA",
+    "itemType": "",
+    "promotionItems": [
+        {
+            "itemNumber": "ZHA",
+            "itemDescription": "The Zero Hour Alert",
+            "productType": "CIR",
+            "inventoryStatus": 0,
+            "promotionItemChoices": [
+                {
+                    "authenticationGroup": "MYK",
+                    "bookClubCode": "",
+                    "choiceDescription": "CC £45 FIRST YR (90DMBG), THEN £99 ANNUALLY EM",
+                    "conferenceRateCode": "",
+                    "conferenceSessionId": "",
+                    "currency": "GBP",
+                    "deliveryCode": "EM",
+                    "installmentBillingCode": "",
+                    "isMemberChoice": false,
+                    "isPackage": false,
+                    "itemChoice": "",
+                    "itemNumber": "ZHA",
+                    "memberCategory": "",
+                    "membershipOrg": "",
+                    "minimumDownPayment": null,
+                    "numberOfFixedPayments": null,
+                    "orderId": null,
+                    "paymentDue": null,
+                    "premiumSetCode": "ZHAB",
+                    "premiumSetDescription": "ZHA + 983SEUD",
+                    "promotionChoiceCode": "ZHA064",
+                    "promotionCode": "EZHAUBZZ",
+                    "quantity": null,
+                    "rate": 37.5,
+                    "rateCode": "",
+                    "renewalFlag": "C",
+                    "subType": "",
+                    "termLength": 12,
+                    "prices": [],
+                    "premiumSet": []
+                }
+            ],
+            "promotionCode": "EZHAUBZZ",
+            "owningOrganization": "983",
+            "publication": {
+                "publicationTitle": "The Zero Hour Alert",
+                "publicationLongTitle": "The Zero Hour Alert",
+                "authenticationGroup": "MYK",
+                "owningOrganization": "983",
+                "idPub": null,
+                "pubCode": "ZHA"
+            },
+            "authenticationGroup": "MYK"
+        }
+    ],
+    "premiums": [],
+    "promotionAlert": "",
+    "premiumSetCode": "",
+    "mailQuantity": 0,
+    "listUsed": ""
+}';
+    }
+
     /******************************************************************************************************************
      * 11 Open Call Services
      **/
