@@ -64,6 +64,24 @@ class Middleware implements MiddlewareInterface
         $this->httpClient = $httpClient;
     }
 
+
+    /**
+     * @param $token
+     */
+    public function set_token($token)
+    {
+        $this->token = $token;
+    }
+
+    /**
+     * @param $token
+     */
+    public function get_token($token)
+    {
+        $this->token = $token;
+    }
+
+
     /******************************************************************************************************************
      * 1 Customer Services
      **/
